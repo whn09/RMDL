@@ -407,7 +407,7 @@ def Text_Classification(x_train, y_train, x_test, y_test, batch_size=128,
         F3 = precision_recall_fscore_support(y_test_temp, final_y, average='weighted')
     if plot:
         Plot.RMDL_epoch(History)
-    print('y_proba.shape = %s' % y_proba.shape)
+    print('y_proba.shape = %s' % str(y_proba.shape))
     print("Accuracy of", len(score), "models:", score)
     print("Accuracy:", F_score)
     print("F1_Micro:", F1)
