@@ -10,7 +10,6 @@ RMDL: Random Multimodel Deep Learning for Classification
  * Comments and Error: email: kk7nc@virginia.edu
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-
 from __future__ import print_function
 
 import os, sys, tarfile
@@ -27,7 +26,7 @@ print(sys.version_info)
 
 
 # path to the directory with the data
-DATA_DIR = '.\data_WOS'
+DATA_DIR = './data_WOS'
 
 # url of the binary data
 DATA_URL = 'http://kowsari.net/WebOfScience.tar.gz'
@@ -46,7 +45,6 @@ def download_and_extract():
         os.makedirs(dest_directory)
     filename = DATA_URL.split('/')[-1]
     filepath = os.path.join(dest_directory, filename)
-
 
     path = os.path.abspath(dest_directory)
     if not os.path.exists(filepath):

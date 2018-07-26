@@ -1,4 +1,3 @@
-
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 RMDL: Random Multimodel Deep Learning for Classification
 
@@ -11,6 +10,7 @@ RMDL: Random Multimodel Deep Learning for Classification
  * Comments and Error: email: kk7nc@virginia.edu
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import gc
 import os
@@ -29,16 +29,14 @@ from RMDL import Global as G
 from RMDL import Plot as Plot
 
 
-def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
-                        EMBEDDING_DIM=50,MAX_SEQUENCE_LENGTH = 500, MAX_NB_WORDS = 75000,
-                        GloVe_dir="", GloVe_file = "glove.6B.50d.txt",
-                        sparse_categorical=True, random_deep=[3, 3, 3], epochs=[500, 500, 500],  plot=False,
+def Text_Classification(x_train, y_train, x_test, y_test, batch_size=128,
+                        EMBEDDING_DIM=50, MAX_SEQUENCE_LENGTH=500, MAX_NB_WORDS=75000,
+                        GloVe_dir="", GloVe_file="glove.6B.50d.txt",
+                        sparse_categorical=True, random_deep=[3, 3, 3], epochs=[500, 500, 500], plot=False,
                         min_hidden_layer_dnn=1, max_hidden_layer_dnn=8, min_nodes_dnn=128, max_nodes_dnn=1024,
-                        min_hidden_layer_rnn=1, max_hidden_layer_rnn=5, min_nodes_rnn=32,  max_nodes_rnn=128,
+                        min_hidden_layer_rnn=1, max_hidden_layer_rnn=5, min_nodes_rnn=32, max_nodes_rnn=128,
                         min_hidden_layer_cnn=3, max_hidden_layer_cnn=10, min_nodes_cnn=128, max_nodes_cnn=512,
-                        random_state=42, random_optimizor=True, dropout=0.5,no_of_classes=0):
-
-
+                        random_state=42, random_optimizor=True, dropout=0.5, no_of_classes=0):
     """
     Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
                         EMBEDDING_DIM=50,MAX_SEQUENCE_LENGTH = 500, MAX_NB_WORDS = 75000,
@@ -103,47 +101,34 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
     """
     np.random.seed(random_state)
 
-
     glove_directory = GloVe_dir
     GloVe_file = GloVe_file
 
-    print("Done1")
-
     GloVe_needed = random_deep[1] != 0 or random_deep[2] != 0
-    
+
     # example_input  = [0,1,3]
     # example_output :
     # 
     # [[1 0 0 0]
     #  [0 1 0 0]
     #  [0 0 0 1]]
-    
+
     def one_hot_encoder(value, label_data_):
-
         label_data_[value] = 1
-
         return label_data_
 
     def _one_hot_values(labels_data):
         encoded = [0] * len(labels_data)
-
         for index_no, value in enumerate(labels_data):
             max_value = [0] * (np.max(labels_data) + 1)
-
             encoded[index_no] = one_hot_encoder(value, max_value)
-
         return np.array(encoded)
 
     if not isinstance(y_train[0], list) and not isinstance(y_train[0], np.ndarray) and not sparse_categorical:
-        #checking if labels are one hot or not otherwise dense_layer will give shape error 
-        
+        # checking if labels are one hot or not otherwise dense_layer will give shape error
         print("converted_into_one_hot")
         y_train = _one_hot_values(y_train)
         y_test = _one_hot_values(y_test)
-            
-
-
-
 
     if GloVe_needed:
         if glove_directory == "":
@@ -151,17 +136,19 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
             GloVe_DIR = os.path.join(GloVe_directory, GloVe_file)
         else:
             GloVe_DIR = os.path.join(glove_directory, GloVe_file)
-
         if not os.path.isfile(GloVe_DIR):
             print("Could not find %s Set GloVe Directory in Global.py ", GloVe)
             exit()
 
     G.setup()
     if random_deep[0] != 0:
-        x_train_tfidf, x_test_tfidf = txt.loadData(x_train, x_test,MAX_NB_WORDS=MAX_NB_WORDS)
-    if random_deep[1] != 0 or random_deep[2] != 0 :
-        print(GloVe_DIR)
-        x_train_embedded, x_test_embedded, word_index, embeddings_index = txt.loadData_Tokenizer(x_train, x_test,GloVe_DIR,MAX_NB_WORDS,MAX_SEQUENCE_LENGTH,EMBEDDING_DIM)
+        x_train_tfidf, x_test_tfidf = txt.loadData(x_train, x_test, MAX_NB_WORDS)
+    if random_deep[1] != 0 or random_deep[2] != 0:
+        print('GloVe_DIR = %s' % GloVe_DIR)
+        x_train_embedded, x_test_embedded, word_index, embeddings_index = txt.loadData_Tokenizer(x_train, x_test,
+                                                                                                 GloVe_DIR,
+                                                                                                 MAX_NB_WORDS,
+                                                                                                 MAX_SEQUENCE_LENGTH)
 
     del x_train
     del x_test
@@ -171,21 +158,19 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
     History = []
     score = []
 
-    if no_of_classes==0:
-        #checking no_of_classes
-        #np.max(data)+1 will not work for one_hot encoding labels
+    if no_of_classes == 0:
+        # checking no_of_classes
+        # np.max(data)+1 will not work for one_hot encoding labels
         if sparse_categorical:
             number_of_classes = np.max(y_train) + 1
         else:
             number_of_classes = len(y_train[0])
     else:
         number_of_classes = no_of_classes
-    print(number_of_classes)
-
+    print('number_of_classes = %s' % number_of_classes)
 
     i = 0
     while i < random_deep[0]:
-        # model_DNN.append(Sequential())
         try:
             print("DNN " + str(i))
             filepath = "./weights/weights_DNN_" + str(i) + ".hdf5"
@@ -206,11 +191,12 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
                                                                    random_optimizor,
                                                                    dropout)
             model_history = model_DNN.fit(x_train_tfidf, y_train,
-                              validation_data=(x_test_tfidf, y_test),
-                              epochs=epochs[0],
-                              batch_size=batch_size,
-                              callbacks=callbacks_list,
-                              verbose=2)
+                                          validation_data=(x_test_tfidf, y_test),
+                                          epochs=epochs[0],
+                                          batch_size=batch_size,
+                                          callbacks=callbacks_list,
+                                          verbose=2)
+            plot_model(model_DNN, to_file='model_DNN.png')
             History.append(model_history)
 
             model_tmp.load_weights(filepath)
@@ -235,15 +221,11 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
                 y_pr.append(np.array(y_pr_))
                 y_test_temp = np.argmax(y_test, axis=1)
                 score.append(accuracy_score(y_test_temp, y_pr_))
-            # print(y_proba)
             i += 1
             del model_tmp
             del model_DNN
-
         except Exception as e:
-
             print("Check the Error \n {} ".format(e))
-
             print("Error in model", i, "try to re-generate another model")
             if max_hidden_layer_dnn > 3:
                 max_hidden_layer_dnn -= 1
@@ -257,7 +239,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
     except:
         pass
 
-    i=0
+    i = 0
     while i < random_deep[1]:
         try:
             print("RNN " + str(i))
@@ -284,15 +266,16 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
                                                                    dropout)
 
             model_history = model_RNN.fit(x_train_embedded, y_train,
-                              validation_data=(x_test_embedded, y_test),
-                              epochs=epochs[1],
-                              batch_size=batch_size,
-                              callbacks=callbacks_list,
-                              verbose=2)
+                                          validation_data=(x_test_embedded, y_test),
+                                          epochs=epochs[1],
+                                          batch_size=batch_size,
+                                          callbacks=callbacks_list,
+                                          verbose=2)
+            plot_model(model_RNN, to_file='model_RNN.png')
             History.append(model_history)
 
+            model_tmp.load_weights(filepath)
             if sparse_categorical:
-                model_tmp.load_weights(filepath)
                 model_tmp.compile(loss='sparse_categorical_crossentropy',
                                   optimizer='rmsprop',
                                   metrics=['accuracy'])
@@ -301,7 +284,6 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
                 y_pr.append(np.array(y_pr_))
                 score.append(accuracy_score(y_test, y_pr_))
             else:
-                model_tmp.load_weights(filepath)
                 model_tmp.compile(loss='categorical_crossentropy',
                                   optimizer='rmsprop',
                                   metrics=['accuracy'])
@@ -314,7 +296,8 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
             del model_tmp
             del model_RNN
             gc.collect()
-        except:
+        except Exception as e:
+            print("Check the Error \n {} ".format(e))
             print("Error in model", i, "try to re-generate another model")
             if max_hidden_layer_rnn > 3:
                 max_hidden_layer_rnn -= 1
@@ -327,6 +310,11 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
     while i < random_deep[2]:
         try:
             print("CNN " + str(i))
+            filepath = "./weights/weights_CNN_" + str(i) + ".hdf5"
+            checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True,
+                                         mode='max')
+            tensorboard = TensorBoard(log_dir='./logs/CNN')
+            callbacks_list = [checkpoint, tensorboard]
 
             model_CNN, model_tmp = BuildModel.Build_Model_CNN_Text(word_index,
                                                                    embeddings_index,
@@ -341,21 +329,13 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
                                                                    random_optimizor,
                                                                    dropout)
 
-
-
-            filepath = "./weights/weights_CNN_" + str(i) + ".hdf5"
-            checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True,
-                                         mode='max')
-            tensorboard = TensorBoard(log_dir='./logs/CNN')
-            callbacks_list = [checkpoint, tensorboard]
-
             model_history = model_CNN.fit(x_train_embedded, y_train,
                                           validation_data=(x_test_embedded, y_test),
                                           epochs=epochs[2],
                                           batch_size=batch_size,
                                           callbacks=callbacks_list,
                                           verbose=2)
-            plot_model(model_history, to_file='model_CNN.png')
+            plot_model(model_CNN, to_file='model_CNN.png')
             History.append(model_history)
 
             model_tmp.load_weights(filepath)
@@ -383,8 +363,8 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
             del model_CNN
             gc.collect()
         except Exception as e:
+            print("Check the Error \n {} ".format(e))
             print("Error in model", i, "try to re-generate an other model")
-            print(e)
             if max_hidden_layer_cnn > 5:
                 max_hidden_layer_cnn -= 1
             if max_nodes_cnn > 128:
@@ -392,7 +372,6 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
                 min_nodes_cnn -= 1
 
     gc.collect()
-
 
     y_proba = np.array(y_pr).transpose()
 
@@ -412,7 +391,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
         # Plot non-normalized confusion matrix
 
         if plot:
-            classes = list(range(0, np.max(y_test)+1))
+            classes = list(range(0, np.max(y_test) + 1))
             Plot.plot_confusion_matrix(cnf_matrix, classes=classes,
                                        title='Confusion matrix, without normalization')
 
@@ -428,9 +407,9 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
         F3 = precision_recall_fscore_support(y_test_temp, final_y, average='weighted')
     if plot:
         Plot.RMDL_epoch(History)
-    print(y_proba.shape)
-    print("Accuracy of",len(score),"models:",score)
-    print("Accuracy:",F_score)
-    print("F1_Micro:",F1)
-    print("F1_Macro:",F2)
-    print("F1_weighted:",F3)
+    print('y_proba.shape = %s' % y_proba.shape)
+    print("Accuracy of", len(score), "models:", score)
+    print("Accuracy:", F_score)
+    print("F1_Micro:", F1)
+    print("F1_Macro:", F2)
+    print("F1_weighted:", F3)

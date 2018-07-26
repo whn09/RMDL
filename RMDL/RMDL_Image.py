@@ -11,6 +11,7 @@ RMDL: Random Multimodel Deep Learning for Classification
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from sklearn.metrics import accuracy_score
 import numpy as np
@@ -22,6 +23,7 @@ from sklearn.metrics import f1_score
 from RMDL import BuildModel as BuildModel
 from RMDL import Global as G
 from keras.callbacks import ModelCheckpoint
+
 np.random.seed(7)
 
 
@@ -121,11 +123,11 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
     score = []
     history_ = []
     if sparse_categorical:
-        number_of_classes = np.max(y_train)+1
+        number_of_classes = np.max(y_train) + 1
     else:
         number_of_classes = np.shape(y_train)[0]
 
-    i =0
+    i = 0
     while i < random_deep[0]:
         try:
             print("DNN ", i, "\n")
@@ -138,7 +140,6 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
                                                                     max_nodes_dnn,
                                                                     random_optimizor,
                                                                     dropout)
-
 
             filepath = "weights\weights_DNN_" + str(i) + ".hdf5"
             checkpoint = ModelCheckpoint(filepath,
@@ -180,8 +181,7 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
             if max_nodes_dnn > 256:
                 max_nodes_dnn -= 8
 
-
-    i =0
+    i = 0
     while i < random_deep[1]:
         try:
             print("RNN ", i, "\n")
@@ -218,7 +218,7 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
             y_pr = np.argmax(y_pr, axis=1)
             y_proba.append(np.array(y_pr))
             score.append(accuracy_score(y_test, y_pr))
-            i = i+1
+            i = i + 1
             del model_tmp
             del model_RNN
             gc.collect()
@@ -230,7 +230,7 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
                 max_nodes_rnn -= 2
 
     # reshape to be [samples][pixels][width][height]
-    i=0
+    i = 0
     while i < random_deep[2]:
         try:
             print("CNN ", i, "\n")
@@ -264,7 +264,7 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
             y_pr = model_tmp.predict_classes(x_test, batch_size=batch_size)
             y_proba.append(np.array(y_pr))
             score.append(accuracy_score(y_test, y_pr))
-            i = i+1
+            i = i + 1
             del model_tmp
             del model_CNN
             gc.collect()
@@ -275,8 +275,6 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
             if max_nodes_cnn > 128:
                 max_nodes_cnn -= 2
                 min_nodes_cnn -= 1
-
-
 
     y_proba = np.array(y_proba).transpose()
     print(y_proba.shape)
@@ -294,18 +292,18 @@ def Image_Classification(x_train, y_train, x_test, y_test, shape, batch_size=128
     np.set_printoptions(precision=2)
     if plot:
         # Plot non-normalized confusion matrix
-        classes = list(range(0,np.max(y_test)+1))
+        classes = list(range(0, np.max(y_test) + 1))
         Plot.plot_confusion_matrix(cnf_matrix, classes=classes,
-                         title='Confusion matrix, without normalization')
-        Plot.plot_confusion_matrix(cnf_matrix, classes=classes,normalize=True,
-                              title='Confusion matrix, without normalization')
+                                   title='Confusion matrix, without normalization')
+        Plot.plot_confusion_matrix(cnf_matrix, classes=classes, normalize=True,
+                                   title='Confusion matrix, without normalization')
 
     if plot:
         Plot.RMDL_epoch(history_)
 
     print(y_proba.shape)
-    print("Accuracy of",len(score),"models:",score)
-    print("Accuracy:",F_score)
-    print("F1_Micro:",F1)
-    print("F1_Macro:",F2)
-    print("F1_weighted:",F3)
+    print("Accuracy of", len(score), "models:", score)
+    print("Accuracy:", F_score)
+    print("F1_Micro:", F1)
+    print("F1_Macro:", F2)
+    print("F1_weighted:", F3)

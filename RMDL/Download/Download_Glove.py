@@ -10,7 +10,6 @@ RMDL: Random Multimodel Deep Learning for Classification
  * Comments and Error: email: kk7nc@virginia.edu
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-
 from __future__ import print_function
 
 import os, sys, tarfile
@@ -28,10 +27,10 @@ print(sys.version_info)
 
 
 # path to the directory with the data
-DATA_DIR = '.\Glove'
+DATA_DIR = './Glove'
+
 
 # url of the binary data
-
 
 
 # path to the binary train file with image data
@@ -43,18 +42,17 @@ def download_and_extract(data='Wikipedia'):
     :return: None
     """
 
-    if data=='Wikipedia':
+    if data == 'Wikipedia':
         DATA_URL = 'http://nlp.stanford.edu/data/glove.6B.zip'
-    elif data=='Common_Crawl_840B':
+    elif data == 'Common_Crawl_840B':
         DATA_URL = 'http://nlp.stanford.edu/data/wordvecs/glove.840B.300d.zip'
-    elif data=='Common_Crawl_42B':
+    elif data == 'Common_Crawl_42B':
         DATA_URL = 'http://nlp.stanford.edu/data/wordvecs/glove.42B.300d.zip'
-    elif data=='Twitter':
+    elif data == 'Twitter':
         DATA_URL = 'http://nlp.stanford.edu/data/wordvecs/glove.twitter.27B.zip'
     else:
         print("prameter should be Twitter, Common_Crawl_42B, Common_Crawl_840B, or Wikipedia")
         exit(0)
-
 
     dest_directory = DATA_DIR
     if not os.path.exists(dest_directory):
@@ -70,8 +68,7 @@ def download_and_extract(data='Wikipedia'):
                                                           float(count * block_size) / float(total_size) * 100.0))
             sys.stdout.flush()
 
-        filepath, _ = urllib.urlretrieve(DATA_URL, filepath)#, reporthook=_progress)
-
+        filepath, _ = urllib.urlretrieve(DATA_URL, filepath)  # , reporthook=_progress)
 
         zip_ref = zipfile.ZipFile(filepath, 'r')
         zip_ref.extractall(DATA_DIR)

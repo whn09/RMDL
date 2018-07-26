@@ -13,10 +13,9 @@ RMDL: Random Multimodel Deep Learning for Classification
 import numpy as np
 import os
 
+
 def setup():
     np.set_printoptions(threshold=np.inf)
     np.random.seed(7)
-    if not os.path.exists(".\weights"):
-        os.makedirs(".\weights")
-
-
+    if not os.path.exists("./weights"):
+        os.makedirs("./weights")

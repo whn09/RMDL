@@ -14,11 +14,12 @@ from sklearn.metrics import precision_recall_fscore_support
 from pylab import *
 import itertools
 
+
 def RMDL_epoch(history_):
     Number_of_models = len(history_)
-    caption=[]
-    for i in range(0,len(history_)):
-        caption.append('RDL '+str(i+1))
+    caption = []
+    for i in range(0, len(history_)):
+        caption.append('RDL ' + str(i + 1))
     plt.legend(caption, loc='upper right')
     for i in range(0, Number_of_models):
         plt.plot(history_[i].history['acc'])
@@ -27,8 +28,6 @@ def RMDL_epoch(history_):
         plt.xlabel('epoch')
     plt.legend(caption, loc='upper right')
     plt.show()
-
-
 
     for i in range(0, Number_of_models):
         plt.plot(history_[i].history['val_acc'])
@@ -71,11 +70,11 @@ def plot_confusion_matrix(cm, classes,
     """
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        #print("Normalized confusion matrix")
-    #else:
-       # print('Confusion matrix, without normalization')
+        # print("Normalized confusion matrix")
+    # else:
+    # print('Confusion matrix, without normalization')
 
-    #print(cm)
+    # print(cm)
 
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
@@ -97,7 +96,7 @@ def plot_confusion_matrix(cm, classes,
     plt.show()
 
 
-def accuracy(y_test,final_y):
+def accuracy(y_test, final_y):
     np.set_printoptions(precision=2)
     y_test_temp = np.argmax(y_test, axis=1)
     F_score = accuracy_score(y_test_temp, final_y)
