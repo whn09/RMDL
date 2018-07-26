@@ -108,7 +108,7 @@ def loadData_Tokenizer(X_train, X_test, GloVe_DIR, MAX_NB_WORDS, MAX_SEQUENCE_LE
     indices = np.arange(text.shape[0])
     # np.random.shuffle(indices)
     text = text[indices]
-    print('text.shape = %s' % text.shape)
+    print('text.shape = %s' % str(text.shape))
     X_train = text[0:len(X_train), ]
     X_test = text[len(X_train):, ]
     embeddings_index = {}

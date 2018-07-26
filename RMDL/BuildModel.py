@@ -28,6 +28,7 @@ import tensorflow as tf
 from keras import optimizers
 import random
 
+
 def optimizors(random_optimizor):
     if random_optimizor:
         i = random.randint(1,3)
