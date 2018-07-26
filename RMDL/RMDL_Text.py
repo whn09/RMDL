@@ -20,6 +20,8 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_recall_fscore_support
 from keras.callbacks import ModelCheckpoint
+from keras.callbacks import TensorBoard
+from keras.utils import plot_model
 from RMDL import BuildModel as BuildModel
 from RMDL.Download import Download_Glove as GloVe
 from RMDL import text_feature_extraction as txt
@@ -132,7 +134,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
 
         return np.array(encoded)
 
-    if not isinstance(y_train[0], list) and not isinstance(y_train[0], np.ndarray) and not sparse_categorical::
+    if not isinstance(y_train[0], list) and not isinstance(y_train[0], np.ndarray) and not sparse_categorical:
         #checking if labels are one hot or not otherwise dense_layer will give shape error 
         
         print("converted_into_one_hot")
@@ -186,7 +188,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
         # model_DNN.append(Sequential())
         try:
             print("DNN " + str(i))
-            filepath = "weights\weights_DNN_" + str(i) + ".hdf5"
+            filepath = "./weights/weights_DNN_" + str(i) + ".hdf5"
             checkpoint = ModelCheckpoint(filepath,
                                          monitor='val_acc',
                                          verbose=1,
@@ -259,13 +261,14 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
     while i < random_deep[1]:
         try:
             print("RNN " + str(i))
-            filepath = "weights\weights_RNN_" + str(i) + ".hdf5"
+            filepath = "./weights/weights_RNN_" + str(i) + ".hdf5"
             checkpoint = ModelCheckpoint(filepath,
                                          monitor='val_acc',
                                          verbose=1,
                                          save_best_only=True,
                                          mode='max')
-            callbacks_list = [checkpoint]
+            tensorboard = TensorBoard(log_dir='./logs/RNN')
+            callbacks_list = [checkpoint, tensorboard]
 
             model_RNN, model_tmp = BuildModel.Build_Model_RNN_Text(word_index,
                                                                    embeddings_index,
@@ -340,10 +343,11 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
 
 
 
-            filepath = "weights\weights_CNN_" + str(i) + ".hdf5"
+            filepath = "./weights/weights_CNN_" + str(i) + ".hdf5"
             checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True,
                                          mode='max')
-            callbacks_list = [checkpoint]
+            tensorboard = TensorBoard(log_dir='./logs/CNN')
+            callbacks_list = [checkpoint, tensorboard]
 
             model_history = model_CNN.fit(x_train_embedded, y_train,
                                           validation_data=(x_test_embedded, y_test),
@@ -351,6 +355,7 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
                                           batch_size=batch_size,
                                           callbacks=callbacks_list,
                                           verbose=2)
+            plot_model(model_history, to_file='model_CNN.png')
             History.append(model_history)
 
             model_tmp.load_weights(filepath)
@@ -377,8 +382,9 @@ def Text_Classification(x_train, y_train, x_test,  y_test, batch_size=128,
             del model_tmp
             del model_CNN
             gc.collect()
-        except:
+        except Exception as e:
             print("Error in model", i, "try to re-generate an other model")
+            print(e)
             if max_hidden_layer_cnn > 5:
                 max_hidden_layer_cnn -= 1
             if max_nodes_cnn > 128:

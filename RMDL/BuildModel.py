@@ -411,7 +411,8 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
         l_pool1 = MaxPooling1D(5)(l_cov1)
         l_cov2 = Conv1D(node, 5, activation='relu')(l_pool1)
         l_cov2 = Dropout(dropout)(l_cov2)
-        l_pool2 = MaxPooling1D(30)(l_cov2)
+        #l_pool2 = MaxPooling1D(30)(l_cov2)  # related wirth MAX_SEQUENCE_LENGTH
+        l_pool2 = MaxPooling1D(6)(l_cov2)
         l_flat = Flatten()(l_pool2)
         l_dense = Dense(1024, activation='relu')(l_flat)
         l_dense = Dropout(dropout)(l_dense)
