@@ -388,13 +388,15 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
         convs = []
         values_layer = list(range(min_hidden_layer_cnn,max_hidden_layer_cnn))
         filter_sizes = []
-        layer = random.choice(values_layer)
+        #layer = random.choice(values_layer)
+        layer = min_hidden_layer_cnn  # TODO henan.wang
         print("Filter  ",layer)
         for fl in range(0,layer):
             filter_sizes.append((fl+2))
 
         values_node = list(range(min_nodes_cnn,max_nodes_cnn))
-        node = random.choice(values_node)
+        #node = random.choice(values_node)
+        node = min_nodes_cnn  # TODO henan.wang
         print("Node  ", node)
         sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
         embedded_sequences = embedding_layer(sequence_input)
@@ -412,12 +414,14 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
         l_cov2 = Conv1D(node, 5, activation='relu')(l_pool1)
         l_cov2 = Dropout(dropout)(l_cov2)
         #l_pool2 = MaxPooling1D(30)(l_cov2)  # related wirth MAX_SEQUENCE_LENGTH
-        l_pool2 = MaxPooling1D(6)(l_cov2)
+        l_pool2 = MaxPooling1D(6)(l_cov2)  # TODO henan.wang
         l_flat = Flatten()(l_pool2)
-        l_dense = Dense(1024, activation='relu')(l_flat)
+        l_dense = Dense(node, activation='relu')(l_flat)  # TODO henan.wang
         l_dense = Dropout(dropout)(l_dense)
-        l_dense = Dense(512, activation='relu')(l_dense)
-        l_dense = Dropout(dropout)(l_dense)
+#        l_dense = Dense(1024, activation='relu')(l_flat)
+#        l_dense = Dropout(dropout)(l_dense)
+#        l_dense = Dense(512, activation='relu')(l_dense)
+#        l_dense = Dropout(dropout)(l_dense)
         preds = Dense(nclasses, activation='softmax')(l_dense)
         model = Model(sequence_input, preds)
         model_tmp = model
