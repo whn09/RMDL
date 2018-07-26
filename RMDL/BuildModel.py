@@ -11,15 +11,16 @@ RMDL: Random Multimodel Deep Learning for Classification
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from keras.models import Sequential
 import numpy as np
 from keras.constraints import maxnorm
 from keras.layers import Dense, Flatten
-from keras.layers import Conv1D,MaxPooling2D, \
-    MaxPooling1D, Embedding, Dropout,\
-    GRU,TimeDistributed,Conv2D,\
-    Activation,LSTM,Input
+from keras.layers import Conv1D, MaxPooling2D, \
+    MaxPooling1D, Embedding, Dropout, \
+    GRU, TimeDistributed, Conv2D, \
+    Activation, LSTM, Input
 from keras import backend as K
 from keras.models import Model
 from keras.layers.core import Lambda
@@ -31,22 +32,21 @@ import random
 
 def optimizors(random_optimizor):
     if random_optimizor:
-        i = random.randint(1,3)
-        if i==0:
+        i = random.randint(1, 3)
+        if i == 0:
             opt = optimizers.SGD()
-        elif i==1:
-            opt= optimizers.RMSprop()
-        elif i==2:
-            opt= optimizers.Adagrad()
-        elif i==3:
+        elif i == 1:
+            opt = optimizers.RMSprop()
+        elif i == 2:
+            opt = optimizers.Adagrad()
+        elif i == 3:
             opt = optimizers.Adam()
-        elif i==4:
-            opt =optimizers.Nadam()
+        elif i == 4:
+            opt = optimizers.Nadam()
         print(opt)
     else:
-        opt= optimizers.Adam()
+        opt = optimizers.Adam()
     return opt
-
 
 
 def slice_batch(x, n_gpus, part):
@@ -54,12 +54,12 @@ def slice_batch(x, n_gpus, part):
     Divide the input batch into [n_gpus] slices, and obtain slice number [part].
     i.e. if len(x)=10, then slice_batch(x, 2, 1) will return x[5:].
     """
-
     sh = K.shape(x)
     L = sh[0] // n_gpus
     if part == n_gpus - 1:
-        return x[part*L:]
-    return x[part*L:(part+1)*L]
+        return x[part * L:]
+    return x[part * L:(part + 1) * L]
+
 
 def to_multi_gpu(model, n_gpus=2):
     """
@@ -79,7 +79,7 @@ def to_multi_gpu(model, n_gpus=2):
         with tf.device('/gpu:' + str(g)):
             slice_g = Lambda(slice_batch,
                              lambda shape: shape,
-                             arguments={'n_gpus':n_gpus, 'part':g})(x)
+                             arguments={'n_gpus': n_gpus, 'part': g})(x)
             towers.append(model(slice_g))
 
     with tf.device('/cpu:0'):
@@ -88,7 +88,7 @@ def to_multi_gpu(model, n_gpus=2):
     return Model(inputs=[x], outputs=[merged])
 
 
-def Build_Model_DNN_Image(shape, number_of_classes, sparse_categorical, min_hidden_layer_dnn,max_hidden_layer_dnn,
+def Build_Model_DNN_Image(shape, number_of_classes, sparse_categorical, min_hidden_layer_dnn, max_hidden_layer_dnn,
                           min_nodes_dnn, max_nodes_dnn, random_optimizor, dropout):
     '''
     buildModel_DNN_image(shape, nClasses,sparse_categorical)
@@ -98,17 +98,17 @@ def Build_Model_DNN_Image(shape, number_of_classes, sparse_categorical, min_hidd
     '''
 
     model = Sequential()
-    values = list(range(min_nodes_dnn,max_nodes_dnn))
+    values = list(range(min_nodes_dnn, max_nodes_dnn))
     Numberof_NOde = random.choice(values)
-    Lvalues = list(range(min_hidden_layer_dnn,max_hidden_layer_dnn))
-    nLayers =random.choice(Lvalues)
+    Lvalues = list(range(min_hidden_layer_dnn, max_hidden_layer_dnn))
+    nLayers = random.choice(Lvalues)
     print(shape)
     model.add(Flatten(input_shape=shape))
-    model.add(Dense(Numberof_NOde,activation='relu'))
+    model.add(Dense(Numberof_NOde, activation='relu'))
     model.add(Dropout(dropout))
-    for i in range(0,nLayers-1):
+    for i in range(0, nLayers - 1):
         Numberof_NOde = random.choice(values)
-        model.add(Dense(Numberof_NOde,activation='relu'))
+        model.add(Dense(Numberof_NOde, activation='relu'))
         model.add(Dropout(dropout))
     model.add(Dense(number_of_classes, activation='softmax'))
     model_tmp = model
@@ -120,7 +120,7 @@ def Build_Model_DNN_Image(shape, number_of_classes, sparse_categorical, min_hidd
         model.compile(loss='categorical_crossentropy',
                       optimizer=optimizors(random_optimizor),
                       metrics=['accuracy'])
-    return model,model_tmp
+    return model, model_tmp
 
 
 def Build_Model_DNN_Text(shape, nClasses, sparse_categorical,
@@ -133,19 +133,18 @@ def Build_Model_DNN_Text(shape, nClasses, sparse_categorical,
     nClasses is number of classes
     """
     model = Sequential()
-    layer = list(range(min_hidden_layer_dnn,max_hidden_layer_dnn))
+    layer = list(range(min_hidden_layer_dnn, max_hidden_layer_dnn))
     node = list(range(min_nodes_dnn, max_nodes_dnn))
 
-
-    Numberof_NOde =  random.choice(node)
+    Numberof_NOde = random.choice(node)
     nLayers = random.choice(layer)
 
     Numberof_NOde_old = Numberof_NOde
-    model.add(Dense(Numberof_NOde,input_dim=shape,activation='relu'))
+    model.add(Dense(Numberof_NOde, input_dim=shape, activation='relu'))
     model.add(Dropout(dropout))
-    for i in range(0,nLayers):
+    for i in range(0, nLayers):
         Numberof_NOde = random.choice(node)
-        model.add(Dense(Numberof_NOde,input_dim=Numberof_NOde_old,activation='relu'))
+        model.add(Dense(Numberof_NOde, input_dim=Numberof_NOde_old, activation='relu'))
         model.add(Dropout(dropout))
         Numberof_NOde_old = Numberof_NOde
     model.add(Dense(nClasses, activation='softmax'))
@@ -158,7 +157,7 @@ def Build_Model_DNN_Text(shape, nClasses, sparse_categorical,
         model.compile(loss='categorical_crossentropy',
                       optimizer=optimizors(random_optimizor),
                       metrics=['accuracy'])
-    return model,model_tem
+    return model, model_tem
 
 
 def Build_Model_CNN_Image(shape, nclasses, sparse_categorical,
@@ -171,7 +170,7 @@ def Build_Model_CNN_Image(shape, nclasses, sparse_categorical,
     """""
 
     model = Sequential()
-    values = list(range(min_nodes_cnn,max_nodes_cnn))
+    values = list(range(min_nodes_cnn, max_nodes_cnn))
     Layers = list(range(min_hidden_layer_cnn, max_hidden_layer_cnn))
     Layer = random.choice(Layers)
     Filter = random.choice(values)
@@ -180,9 +179,9 @@ def Build_Model_CNN_Image(shape, nclasses, sparse_categorical,
     model.add(Conv2D(Filter, (3, 3)))
     model.add(Activation('relu'))
 
-    for i in range(0,Layer):
+    for i in range(0, Layer):
         Filter = random.choice(values)
-        model.add(Conv2D(Filter, (3, 3),padding='same'))
+        model.add(Conv2D(Filter, (3, 3), padding='same'))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(dropout))
@@ -190,7 +189,7 @@ def Build_Model_CNN_Image(shape, nclasses, sparse_categorical,
     model.add(Flatten())
     model.add(Dense(256, activation='relu'))
     model.add(Dropout(dropout))
-    model.add(Dense(nclasses,activation='softmax',kernel_constraint=maxnorm(3)))
+    model.add(Dense(nclasses, activation='softmax', kernel_constraint=maxnorm(3)))
     model_tmp = model
     if sparse_categorical:
         model.compile(loss='sparse_categorical_crossentropy',
@@ -201,9 +200,7 @@ def Build_Model_CNN_Image(shape, nclasses, sparse_categorical,
                       optimizer=optimizors(random_optimizor),
                       metrics=['accuracy'])
 
-    return model,model_tmp
-
-
+    return model, model_tmp
 
 
 def Build_Model_RNN_Image(shape,
@@ -218,35 +215,36 @@ def Build_Model_RNN_Image(shape,
         num_classes is number of classes,
         shape is (w,h,p)
     """
-    values = list(range(min_nodes_rnn,max_nodes_rnn))
-    node =  random.choice(values)
+    values = list(range(min_nodes_rnn, max_nodes_rnn))
+    node = random.choice(values)
 
     x = Input(shape=shape)
 
     # Encodes a row of pixels using TimeDistributed Wrapper.
-    encoded_rows = TimeDistributed(LSTM(node,recurrent_dropout=dropout))(x)
+    encoded_rows = TimeDistributed(LSTM(node, recurrent_dropout=dropout))(x)
     node = random.choice(values)
     # Encodes columns of encoded rows.
-    encoded_columns = LSTM(node,recurrent_dropout=dropout)(encoded_rows)
+    encoded_columns = LSTM(node, recurrent_dropout=dropout)(encoded_rows)
 
     # Final predictions and model.
-    #prediction = Dense(256, activation='relu')(encoded_columns)
+    # prediction = Dense(256, activation='relu')(encoded_columns)
     prediction = Dense(nclasses, activation='softmax')(encoded_columns)
     model = Model(x, prediction)
     model_tmp = model
     if sparse_categorical:
         model.compile(loss='sparse_categorical_crossentropy',
-                  optimizer=optimizors(random_optimizor),
-                  metrics=['accuracy'])
+                      optimizer=optimizors(random_optimizor),
+                      metrics=['accuracy'])
     else:
         model.compile(loss='categorical_crossentropy',
-                  optimizer=optimizors(random_optimizor),
-                  metrics=['accuracy'])
-    return model,model_tmp
+                      optimizer=optimizors(random_optimizor),
+                      metrics=['accuracy'])
+    return model, model_tmp
 
 
-def Build_Model_RNN_Text(word_index, embeddings_index, nclasses,  MAX_SEQUENCE_LENGTH, EMBEDDING_DIM, sparse_categorical,
-                         min_hidden_layer_rnn, max_hidden_layer_rnn, min_nodes_rnn, max_nodes_rnn, random_optimizor, dropout):
+def Build_Model_RNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM, sparse_categorical,
+                         min_hidden_layer_rnn, max_hidden_layer_rnn, min_nodes_rnn, max_nodes_rnn, random_optimizor,
+                         dropout):
     """
     def buildModel_RNN(word_index, embeddings_index, nClasses, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM, sparse_categorical):
     word_index in word index ,
@@ -256,12 +254,13 @@ def Build_Model_RNN_Text(word_index, embeddings_index, nclasses,  MAX_SEQUENCE_L
     """
 
     model = Sequential()
-    values = list(range(min_nodes_rnn,max_nodes_rnn))
-    values_layer = list(range(min_hidden_layer_rnn,max_hidden_layer_rnn))
+    values = list(range(min_nodes_rnn, max_nodes_rnn))
+    values_layer = list(range(min_hidden_layer_rnn, max_hidden_layer_rnn))
 
     layer = random.choice(values_layer)
     print(layer)
     embedding_matrix = np.random.random((len(word_index) + 1, EMBEDDING_DIM))
+    embedding_hit = 0
     for word, i in word_index.items():
         embedding_vector = embeddings_index.get(word)
         if embedding_vector is not None:
@@ -272,16 +271,18 @@ def Build_Model_RNN_Text(word_index, embeddings_index, nclasses,  MAX_SEQUENCE_L
                                                                 " EMBEDDING_DIM is equal to embedding_vector file ,GloVe,")
                 exit(1)
             embedding_matrix[i] = embedding_vector
+            embedding_hit += 1
+    print('embedding_hit = %s' % embedding_hit)
     model.add(Embedding(len(word_index) + 1,
-                                EMBEDDING_DIM,
-                                weights=[embedding_matrix],
-                                input_length=MAX_SEQUENCE_LENGTH,
-                                trainable=True))
+                        EMBEDDING_DIM,
+                        weights=[embedding_matrix],
+                        input_length=MAX_SEQUENCE_LENGTH,
+                        trainable=True))
 
     gru_node = random.choice(values)
-    print(gru_node)
-    for i in range(0,layer):
-        model.add(GRU(gru_node,return_sequences=True, recurrent_dropout=0.2))
+    print('gru_node = %s' % gru_node)
+    for i in range(0, layer):
+        model.add(GRU(gru_node, return_sequences=True, recurrent_dropout=0.2))
         model.add(Dropout(dropout))
     model.add(GRU(gru_node, recurrent_dropout=0.2))
     model.add(Dropout(dropout))
@@ -289,8 +290,7 @@ def Build_Model_RNN_Text(word_index, embeddings_index, nclasses,  MAX_SEQUENCE_L
     model.add(Dense(nclasses, activation='softmax'))
 
     model_tmp = model
-    #model = to_multi_gpu(model, 3)
-
+    # model = to_multi_gpu(model, 3)
 
     if sparse_categorical:
         model.compile(loss='sparse_categorical_crossentropy',
@@ -300,13 +300,12 @@ def Build_Model_RNN_Text(word_index, embeddings_index, nclasses,  MAX_SEQUENCE_L
         model.compile(loss='categorical_crossentropy',
                       optimizer=optimizors(random_optimizor),
                       metrics=['accuracy'])
-    return model,model_tmp
+    return model, model_tmp
 
 
 def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM, sparse_categorical,
-                       min_hidden_layer_cnn, max_hidden_layer_cnn, min_nodes_cnn, max_nodes_cnn, random_optimizor,
-                       dropout, simple_model=False):
-
+                         min_hidden_layer_cnn, max_hidden_layer_cnn, min_nodes_cnn, max_nodes_cnn, random_optimizor,
+                         dropout, simple_model=False):
     """
         def buildModel_CNN(word_index,embeddings_index,nClasses,MAX_SEQUENCE_LENGTH,EMBEDDING_DIM,Complexity=0):
         word_index in word index ,
@@ -322,25 +321,28 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
     model = Sequential()
     if simple_model:
         embedding_matrix = np.random.random((len(word_index) + 1, EMBEDDING_DIM))
+        embedding_hit = 0
         for word, i in word_index.items():
             embedding_vector = embeddings_index.get(word)
             if embedding_vector is not None:
-                if len(embedding_matrix[i]) !=len(embedding_vector):
-                    print("could not broadcast input array from shape",str(len(embedding_matrix[i])),
-                                     "into shape",str(len(embedding_vector))," Please make sure your"
-                                     " EMBEDDING_DIM is equal to embedding_vector file ,GloVe,")
+                if len(embedding_matrix[i]) != len(embedding_vector):
+                    print("could not broadcast input array from shape", str(len(embedding_matrix[i])),
+                          "into shape", str(len(embedding_vector)), " Please make sure your"
+                                                                    " EMBEDDING_DIM is equal to embedding_vector file ,GloVe,")
                     exit(1)
                 # words not found in embedding index will be all-zeros.
                 embedding_matrix[i] = embedding_vector
+                embedding_hit += 1
+        print('embedding_hit = %s' % embedding_hit)
         model.add(Embedding(len(word_index) + 1,
                             EMBEDDING_DIM,
                             weights=[embedding_matrix],
                             input_length=MAX_SEQUENCE_LENGTH,
                             trainable=True))
-        values = list(range(min_nodes_cnn,max_nodes_cnn))
-        Layer = list(range(min_hidden_layer_cnn,max_hidden_layer_cnn))
+        values = list(range(min_nodes_cnn, max_nodes_cnn))
+        Layer = list(range(min_hidden_layer_cnn, max_hidden_layer_cnn))
         Layer = random.choice(Layer)
-        for i in range(0,Layer):
+        for i in range(0, Layer):
             Filter = random.choice(values)
             model.add(Conv1D(Filter, 5, activation='relu'))
             model.add(Dropout(dropout))
@@ -356,7 +358,6 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
 
         model.add(Dense(nclasses, activation='softmax'))
         model_tmp = model
-        #model = Model(sequence_input, preds)
         if sparse_categorical:
             model.compile(loss='sparse_categorical_crossentropy',
                           optimizer=optimizors(random_optimizor),
@@ -367,17 +368,19 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
                           metrics=['accuracy'])
     else:
         embedding_matrix = np.random.random((len(word_index) + 1, EMBEDDING_DIM))
+        embedding_hit = 0
         for word, i in word_index.items():
             embedding_vector = embeddings_index.get(word)
             if embedding_vector is not None:
                 # words not found in embedding index will be all-zeros.
-                if len(embedding_matrix[i]) !=len(embedding_vector):
-                    print("could not broadcast input array from shape",str(len(embedding_matrix[i])),
-                                     "into shape",str(len(embedding_vector))," Please make sure your"
-                                     " EMBEDDING_DIM is equal to embedding_vector file ,GloVe,")
+                if len(embedding_matrix[i]) != len(embedding_vector):
+                    print("could not broadcast input array from shape", str(len(embedding_matrix[i])),
+                          "into shape", str(len(embedding_vector)), " Please make sure your"
+                                                                    " EMBEDDING_DIM is equal to embedding_vector file ,GloVe,")
                     exit(1)
-
                 embedding_matrix[i] = embedding_vector
+                embedding_hit += 1
+        print('embedding_hit = %s' % embedding_hit)
 
         embedding_layer = Embedding(len(word_index) + 1,
                                     EMBEDDING_DIM,
@@ -387,17 +390,17 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
 
         # applying a more complex convolutional approach
         convs = []
-        values_layer = list(range(min_hidden_layer_cnn,max_hidden_layer_cnn))
+        values_layer = list(range(min_hidden_layer_cnn, max_hidden_layer_cnn))
         filter_sizes = []
-        #layer = random.choice(values_layer)
-        layer = min_hidden_layer_cnn  # TODO henan.wang
-        print("Filter  ",layer)
-        for fl in range(0,layer):
-            filter_sizes.append((fl+2))
+        layer = random.choice(values_layer)
+        #layer = min_hidden_layer_cnn  # TODO henan.wang
+        print("Filter  ", layer)
+        for fl in range(0, layer):
+            filter_sizes.append((fl + 2))
 
-        values_node = list(range(min_nodes_cnn,max_nodes_cnn))
-        #node = random.choice(values_node)
-        node = min_nodes_cnn  # TODO henan.wang
+        values_node = list(range(min_nodes_cnn, max_nodes_cnn))
+        node = random.choice(values_node)
+        #node = min_nodes_cnn  # TODO henan.wang
         print("Node  ", node)
         sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
         embedded_sequences = embedding_layer(sequence_input)
@@ -405,7 +408,7 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
         for fsz in filter_sizes:
             l_conv = Conv1D(node, kernel_size=fsz, activation='relu')(embedded_sequences)
             l_pool = MaxPooling1D(5)(l_conv)
-            #l_pool = Dropout(0.25)(l_pool)
+            # l_pool = Dropout(0.25)(l_pool)
             convs.append(l_pool)
 
         l_merge = Concatenate(axis=1)(convs)
@@ -414,15 +417,15 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
         l_pool1 = MaxPooling1D(5)(l_cov1)
         l_cov2 = Conv1D(node, 5, activation='relu')(l_pool1)
         l_cov2 = Dropout(dropout)(l_cov2)
-        #l_pool2 = MaxPooling1D(30)(l_cov2)  # related wirth MAX_SEQUENCE_LENGTH
+        # l_pool2 = MaxPooling1D(30)(l_cov2)  # related wirth MAX_SEQUENCE_LENGTH
         l_pool2 = MaxPooling1D(6)(l_cov2)  # TODO henan.wang
         l_flat = Flatten()(l_pool2)
         l_dense = Dense(node, activation='relu')(l_flat)  # TODO henan.wang
         l_dense = Dropout(dropout)(l_dense)
-#        l_dense = Dense(1024, activation='relu')(l_flat)
-#        l_dense = Dropout(dropout)(l_dense)
-#        l_dense = Dense(512, activation='relu')(l_dense)
-#        l_dense = Dropout(dropout)(l_dense)
+        #        l_dense = Dense(1024, activation='relu')(l_flat)
+        #        l_dense = Dropout(dropout)(l_dense)
+        #        l_dense = Dense(512, activation='relu')(l_dense)
+        #        l_dense = Dropout(dropout)(l_dense)
         preds = Dense(nclasses, activation='softmax')(l_dense)
         model = Model(sequence_input, preds)
         model_tmp = model
@@ -435,5 +438,4 @@ def Build_Model_CNN_Text(word_index, embeddings_index, nclasses, MAX_SEQUENCE_LE
                           optimizer=optimizors(random_optimizor),
                           metrics=['accuracy'])
 
-
-    return model,model_tmp
+    return model, model_tmp
